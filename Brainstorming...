@@ -1,0 +1,20 @@
+Découverte GPIO
+https://raspberry-lab.fr/Debuter-sur-Raspberry-Francais/Creer-un-programme-Python-Raspberry-Francais/
+Bon. Visiblement je vais devoir :
+1) mettre le programme dans la raspberry-pi via microSD ---> /!\ système d'exploitation Linux (ptn. encore un truc à apprendre en surface. c'est honteux)
+  a) Adapter le programme en liant les variables à des entrées et des sorties appelées GPIO
+  b) GPIO.output(18, True) ---> balance du jus dans le port n°18
+  c) 
+
+2) Acheter le matos annexe : Résistances, Breadboard, fils
+  a) La breadboard servira pour la conception avant de souder définitivement les éléments.
+  b) Les résistances sont sélectionnées par l'application de la loi d'Ohm et de Kirshhoff en fonction des paramêtres d'utilisation des objets mécaniques.
+  c) En fonction de la gourmandise du projet, il faudra réfléchir à l'alimentation.
+  d) Des leds. évidemment.
+  e) Les cerveaux-moteu...putain mais quoi?! C'était *SERVO*moteur depuis tout ce temps!
+      Bon il faudra une alimentation, je vais choisir secteur. donc faut un transfo.
+      Est-ce que je dois prendre en compte le bras de levier des flipboards ? j'espère que je n'aurais rien à compenser, j'ai pas besoin de pb superflus...
+
+3) Un peu de mécanique et d'artisanat 
+  a) Le levier sera surement actionné brusquement, c'est tout le principe du concept! Il faudra donc un différentiel et un amortisseur (néoprène ou ressort)
+  b) 
