@@ -23,3 +23,13 @@ Bon. Visiblement je vais devoir :
       [c'est pour ça que je dois avancer au lieu de chercher de la merde sur Amazon ptn] bon nsm je vais les imprimer en 3D/ maqueter.
   d) Les guichets à bille : soit une couroie peinte derrière un trou (à maqueter) soit faire un sytème avec des billes et des resorts comme dans une serrure ce serait + sexy (invention) 
   
+
+
+Note greg:
+> En fonction de la gourmandise du projet, il faudra réfléchir à l'alimentation.
+Je pense que les servomotor (a vu d'oeil hein) sont surement au moins en 5V DC, si tu en as plusieurs connecté a ton Pi je te recommande d'avoir une alimentation séparée, c'est à dire que tu as une sorte de "power rail" (comme sur la breadboard). Si tu branches le +- des servomoteur au Pi le risque c'est que le Pi ait plus assez de jus et s'éteigne. J'en ai cramé un comme ça...
+
+> Bon il faudra une alimentation, je vais choisir secteur. donc faut un transfo.
+Check le besoin en amps de tes servomoteur quand tu les acheteras, mais si tu en as plusieurs (je suppose) et que chacun peut prendre 1-2 amps c'est possible qu'il te fasse un transfo un peu dur a trouver dans le commerce "normal"... mais aliexpress est top pour ce genre de trucs (et toute l'electronique de maniere generale)
+
+Ou tu peux tjr recup une alim de PC fixe si t'en as une qui traine, mais de mémoire c'est du 12V donc faut le step down.
