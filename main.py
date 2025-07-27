@@ -26,24 +26,51 @@ class Joueur:
 # === CLASSES DES PHASES ===
 class PhaseIntro:
     def run_phase(self):
+        self.presentation()
         for j in joueurs:
             jouer_tour(j, max_lancers=1, nb_des=1)
-        nb_tour, gagnant = resoudre_tour(joueurs, POT)
+        gagnant = resoudre_tour(joueurs, POT)
         return ordre_passage(joueurs, gagnant.position)
+
+    def presentation(self):
+        print("\n         BIENVENUE POUR CETTE PARTIE DE\n")
+        print("        =================================\n"
+              "        =      ##      ####       ##    =\n"
+              "        =     ###     #   ##     ###    =\n"
+              "        =    # ##        ##     # ##    =\n"
+              "        =   #  ##       ##        ##    =\n"
+              "        =  ########    ##         ##    =\n"
+              "        =      ##     ##          ##    =\n"
+              "        =      ##    #######     ####   =\n"
+              "        =================================\n")
+        print(f"        NOMBRE DE JOUEURS : {len(joueurs)}")
+        print(f"        NOMBRE DE JETONS DANS LE POT : {POT}\n")
+        print("=== PHASE PRÉLIMINAIRE ===")
+        print("Veuillez lancer 1 dé à tour de rôle pour déterminer le premier joueur")
+
 
 class PhaseCharge:
     def run_phase(self):
-        for j in joueurs:
-            jouer_tour(j, max_lancers=3, nb_des=3)
-        nb_tour, gagnant = resoudre_tour(joueurs, POT)
-        return ordre_passage(joueurs, gagnant.position)
+        nb_tour = 0
+        while POT > 0:
+            nb_tour += 1
+            print(f"TOUR {nb_tour}")
+            for j in joueurs:
+                jouer_tour(j, max_lancers=1, nb_des=3)
+            perdant, gagnant = resoudre_tour(joueurs, POT)
+            trading(perdant, None, jeton_par_score(gagnant.score, POT, None, PHASE), POT)
+            return ordre_passage(joueurs, perdant.position)
 
 class PhaseDecharge:
-    def run_phase(self):
-        for j in joueurs:
-            jouer_tour(j, max_lancers=3, nb_des=3)
-        nb_tour, gagnant = resoudre_tour(joueurs, POT)
-        return ordre_passage(joueurs, gagnant.position)
+    def run_phase(self, nb_tour):
+        while len(joueurs) > 1:
+            nb_tour += 1
+            print(f"TOUR {nb_tour}")
+            for j in joueurs and j.etat == 'joueur':
+                jouer_tour(j, max_lancers=3, nb_des=3)
+            perdant, gagnant = resoudre_tour(joueurs, POT)
+            trading(perdant, gagnant, jeton_par_score(gagnant.score, POT, gagnant.points, PHASE), POT)
+            return ordre_passage(joueurs, perdant.position)
 
 ################################################################################################################
 # === FONCTIONS ===
@@ -105,77 +132,43 @@ def resoudre_tour(joueurs, POT):
             print(f"DUEL POUR : ÊTRE LE PREMIER JOUEUR ENTRE JOUEURS {gagnants}")
             # a corriger après premier test
             gagnants = duel_intro(gagnants)
-        gagnants[0].score = scores[-1][0]
         print(f"\nLe premier joueur à commencer est le joueur {gagnants[0].position} avec {gagnants[0].score}")
         print("----------------------------------")
-        return 0, gagnants[0]
+        return gagnants[0]
+
     if PHASE == 'charge':
         scores = [(j.score, j) for j in joueurs]
         scores.sort(key=lambda x: x[0])  # Score le plus bas en premier
         for j in joueurs:
             if j.score == scores[0][0]:
                 perdants.append(j)
+            if j.score == scores[-1][0]:
+                gagnants.append(j)
+        p = jeton_par_score(scores[-1][0], POT, None, PHASE)
         while len(perdants) > 1:
-            print(f"DUEL POUR : NE PAS PRENDRE {jeton_par_score(scores[-1][0], POT, None, PHASE)} JETONS")
+            print(f"DUEL POUR : (NE PAS) PRENDRE {p} JETONS")
             perdants = duel_charge(perdants)
-        perdants[0].score = scores[0][0]
-        print(f"\nLe premier joueur à commencer est le joueur {gagnants[0].position} avec {gagnants[0].score}")
         print("----------------------------------")
-        return 0, gagnants[0]
+        return perdants[0], gagnants[0]
 
-
-    if PHASE == 'intro':
-        scores = [(score_value(j.score), j.score, j, j.lancers) for j in joueurs if j.etat == 'joueur']
+    if PHASE == 'décharge':
+        scores = [(j.score, j) for j in joueurs]
         scores.sort(key=lambda x: x[0])  # Score le plus bas en premier
         for j in joueurs:
-            if j.score == scores[0][1]:
+            if j.score == scores[-1][0]:
+                gagnants.append(j)
+            if j.score == scores[0][0]:
                 perdants.append(j)
-        n = 0
+        p = jeton_par_score(scores[-1][0], POT, 1000, PHASE)
+        while len(gagnants) > 1:
+            print(f"DUEL POUR : DONNER {p} JETONS")
+            gagnants = duel_decharge(gagnants)
         while len(perdants) > 1:
-            n += 1
-            print("\nc'est l'heure du-du-du-du-du DUEL! (des nuls)")
-            input(f"=== Duel perdant : {len(perdants)} joueurs ===")
-            perdants = duel_perdant(perdants)
-        perdant = perdants[0]
-        perdant.score = scores[0][1]
-        print(f"\nPERDANT DU TOUR {nb_tour}:\n     Joueur {perdants[0].position} avec {perdants[0].score}\n")
-        if phase == 'charge':
-            gagnant = scores[-1][2]
-            gagnants.append(gagnant)
-        elif phase == 'décharge':
-            for j in joueurs:
-                if j.score == scores[-1][1]:
-                    gagnants.append(j)
-            n = 0
-            while len(gagnants) > 1:
-                n += 1
-                print("\nc'est l'heure du-du-du-du-du DUEL! (des boss)")
-                input(f"=== Duel gagnant : {len(gagnants)} joueurs ===")
-                gagnants = duel_gagnant(gagnants)
-            gagnant = gagnants[0]
-        gagnant.score = scores[-1][1]
-        print(f"GAGNANT DU TOUR {nb_tour}:\n     Joueur {gagnants[0].position} avec {gagnants[0].score}")
-
-        if phase == 'décharge':
-            print(f"\n>> Le joueur {gagnant.position} donne {jeton_par_score(gagnant.score, pot, gagnant.points, phase)} jeton(s)")
-            print(f"au joueur {perdant.position}")
-        if phase == 'charge':
-            print(f"\n>> Attribution de {jeton_par_score(gagnant.score, pot, gagnant.points, phase)} jeton(s)")
-            print(f"au joueur {perdant.position}")
-        return perdant, gagnant
-
-
-
-
-
-
-
-
-
-
-
-
-
+            print(f"DUEL POUR : (NE PAS) PRENDRE {p} JETONS")
+            perdants = duel_charge(perdants)
+        p = jeton_par_score(gagnants[0].score, POT, gagnants[0].points, PHASE)
+        print("----------------------------------")
+        return perdants[0], gagnants[0]
 
 def duel_intro(joueurs):
     score_temp = joueurs[0].score
@@ -183,6 +176,7 @@ def duel_intro(joueurs):
     if len(joueurs) > 1:
         # # # GPIO OUT # # # Output des LEDS/guichet d'état par joueur : signale le duel
         for j in joueurs:
+            j.etat = 'duel'
             print(f"Joueur {j.position}, à ton tour.")
             # # # GPIO IN # # # Input du levier à actionner par le joueur
             # # # GPIO IN # # # Détection des résultats des dés + Tri + Affichage
@@ -198,6 +192,7 @@ def duel_intro(joueurs):
                 gagnants.append(j)
         for j in joueurs:
             j.score = score_temp
+            j.etat = 'joueur'
     elif len(joueurs) == 1:
         gagnants = joueurs
     return gagnants
@@ -229,11 +224,12 @@ def duel_charge(joueurs):
     return perdants
 def duel_decharge(joueurs):
     score_temp = joueurs[0].score
-    joueurs = comparer_nb_lancers(joueurs, True)
+    joueurs = comparer_nb_lancers(joueurs, False)
     gagnants = []
     if len(joueurs) > 1:
         # # # GPIO OUT # # # Output des LEDS/guichet d'état par joueur : signale le duel
         for j in joueurs:
+            j.etat = 'duel'
             print(f"Joueur {j.position}, à ton tour.")
             # # # GPIO IN # # # Input du levier à actionner par le joueur
             # # # GPIO IN # # # Détection des résultats des dés + Tri + Affichage
@@ -248,6 +244,7 @@ def duel_decharge(joueurs):
                 gagnants.append(j)
         for j in joueurs:
             j.score = score_temp
+            j.etat = 'joueur'
     elif len(joueurs) == 1:
         gagnants = joueurs
     return gagnants
@@ -297,7 +294,6 @@ def score_value(score):
             return 2000 + score[2]  # Suite
         else:
             return int(score[0] * 100 + score[1] * 10 + score[2])  # rien
-
 def jeton_par_score(score, pot, points, PHASE):
     # Évalue le score et attribue un nombre de jeton associé au score
     if PHASE == 'charge':
@@ -322,25 +318,48 @@ def jeton_par_score(score, pot, points, PHASE):
         return min(2, a)  # Suite
     else:
         return min(1, a)  # rien
+def trading(a, b, p, POT):
+    if PHASE == 'charge':
+        a.points += p
+        POT -= p
+        return a, POT
+    if PHASE == 'décharge':
+        a.points += p
+        b.points -= p
+        if b.points < 0:
+            b.etat = 'spectateur'
+        return a, b
 
 ################################################################################################################
 ###########################################  PROGRAMME PRINCIPAL  ##############################################
 ################################################################################################################
+
 # le jeu commence!
 joueurs = inserer_pieces()
+nb_tour = 0
 POT = POINTS_PAR_JOUEUR * len(joueurs) + 1
 
+
+input("intro?")
 # # # GPIO OUT # # # Affichage de la phase 'OUVERTURE'
 PHASE = "intro"
 intro = PhaseIntro()
 joueurs = intro.run_phase()
 
+
+input("charge?")
 # # # GPIO OUT # # # Affichage de la phase 'CHARGE'
 PHASE = 'charge'
 charge = PhaseCharge()
 joueurs = charge.run_phase()
+while POT > 0:
+    print(f"POINT(S) DANS LE POT : {POT}")
+    joueurs = charge.run_phase()
 
+input("décharge?")
 # # # GPIO OUT # # # Affichage de la phase 'DECHARGE'
 PHASE = 'décharge'
 decharge = PhaseDecharge()
-joueurs = decharge.run_phase(joueurs)
+joueurs = decharge.run_phase(nb_tour)
+while enumerate((j, j.etat == 'joueur') for j in joueurs) > 1:
+    joueurs = decharge.run_phase(nb_tour)
